@@ -18,7 +18,7 @@
 
 保存工作并完全退出 ZCode，双击 `START-ZCODE.cmd`，然后打开原有对话。不会修改已有 ZCode 提示词增强补丁、模型配置或会话数据。
 
-启动器不关闭任何已运行程序。发现目标还在运行、端口被占用或 Node 版本过低时会停止并说明原因。使用自定义安装位置：
+启动器用正常窗口启动客户端，不关闭任何已运行程序。已经由本工具启动的实例可重复点击 START：窗口会显示到前台，并复用已有 watcher；普通启动、没有主题端口的实例仍需先完全退出。端口被其他程序占用或 Node 版本过低时会停止并说明原因。使用自定义安装位置：
 
 ```powershell
 powershell -NoProfile -File .\launch.ps1 -App zcode -AppPath "D:\Apps\ZCode\ZCode.exe"
@@ -52,7 +52,7 @@ Codex/ZCode 通过各自的**仅回环地址** CDP 端口注入 CSS，端口分�
 - 只执行插入/移除一个固定 ID 样式元素的脚本，不读取对话正文或发送模型请求。
 - 不注入 HTTP 本地预览网站，不使用外部图片、远程 CSS 或网络字体。
 - watcher 每三秒处理新页面/重载；完全退出应用后，连续 30 秒无法连接则自行结束。
-- 运行日志只含状态计数和连接错误，位于 `%LOCALAPPDATA%\AgentTerminalClarity`。
+- 运行日志只含状态计数和连接错误，位于 `%LOCALAPPDATA%\AgentTerminalClarity`；启动错误另存到 `<客户端>-launch.log`。CMD 出错后保留窗口并返回失败退出码，不把 pause 成功误报为启动成功。
 - 异常崩溃可能留下 `codex.lock` / `zcode.lock`。文件内容是 watcher PID；确认该 PID 已不存在后，才移除对应 lock，不要结束不明进程。
 
 ## 兼容与验证
@@ -61,7 +61,7 @@ Codex/ZCode 通过各自的**仅回环地址** CDP 端口注入 CSS，端口分�
 |---|---|---|
 | Pi Desktop 0.20.1 | 原生主题插件与 `.prose-chat` | 已安装启用，真实旧回复目视验收通过 |
 | Codex/ChatGPT Desktop 26.1016.8622.0 | 本机 CSS 资源版本 26.1016.62342，`_MarkdownContent_` 和 Markdown 数据属性 | 安装资源检查；离线渲染/传输测试。需退出当前客户端后启动，完成真实会话验收 |
-| ZCode 3.16.2.8769 | 本机 3.16.2 Markdown 容器类与开源 `MessageResponse` | 安装资源检查；离线渲染/传输测试。需退出当前客户端后启动，完成真实会话验收 |
+| ZCode 3.16.2.8769 | 本机 3.16.2 Markdown 容器类与开源 `MessageResponse` | 1.0.1 已实际拉起客户端，打开旧回复目视确认配色；START 重复启动显示窗口并复用 watcher 已通过 |
 
 这不是官方插件接口。桌面端将来更改文档 URL、主题标记或 Markdown DOM 时可能需要适配；启动成功或 CSS 传输成功，不等于新版本已完成视觉验收。若没有变化，查看日志中的 roots 计数和主题明暗设置。
 

@@ -82,7 +82,7 @@ export async function connect(url, timeout = 4000) {
   };
 }
 
-export async function apply(app, css, restore = false) {
+export async function apply(app, css, restore = false, show = false) {
   const config=apps[app];
   if(!config)throw new Error('Choose codex or zcode.');
   const response=await fetch(`http://127.0.0.1:${config.port}/json/list`,{signal:AbortSignal.timeout(3000)});
@@ -93,6 +93,7 @@ export async function apply(app, css, restore = false) {
   for(const target of targets) {
     const cdp=await connect(localSocket(target.webSocketDebuggerUrl,config.port));
     try {
+      if(show)await cdp.call('Page.bringToFront');
       const result=await cdp.call('Runtime.evaluate',{
         expression:expression(css,config.root,restore),returnByValue:true,
       });
@@ -105,7 +106,7 @@ export async function apply(app, css, restore = false) {
 }
 
 async function main() {
-  const {values}=parseArgs({options:{app:{type:'string'},watch:{type:'boolean'},restore:{type:'boolean'},stop:{type:'boolean'},check:{type:'boolean'}}});
+  const {values}=parseArgs({options:{app:{type:'string'},watch:{type:'boolean'},restore:{type:'boolean'},stop:{type:'boolean'},check:{type:'boolean'},show:{type:'boolean'}}});
   if(!apps[values.app])throw new Error('Usage: node runtime.mjs --app codex|zcode [--watch|--restore|--stop|--check]');
   const dir=join(process.env.LOCALAPPDATA || process.env.HOME || process.cwd(),'AgentTerminalClarity');
   await mkdir(dir,{recursive:true});
@@ -114,7 +115,7 @@ async function main() {
   if(values.stop){await (await open(stopFile,'w')).close();console.log('Stop requested; the watcher removes CSS before exiting.');return;}
   const css=await readFile(new URL(`./themes/${values.app}.css`,import.meta.url),'utf8');
   if(values.check){console.log(JSON.stringify({app:values.app,port:apps[values.app].port,cssBytes:Buffer.byteLength(css),selector:apps[values.app].root}));return;}
-  if(!values.watch){console.log(JSON.stringify(await apply(values.app,css,values.restore)));return;}
+  if(!values.watch){console.log(JSON.stringify(await apply(values.app,css,values.restore,values.show)));return;}
   let lock;
   try {lock=await open(lockFile,'wx');}
   catch(error) {if(error.code==='EEXIST')throw new Error('Watcher lock exists. Use RESTORE or inspect the lock before starting another watcher.');throw error;}

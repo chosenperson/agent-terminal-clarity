@@ -5,6 +5,13 @@ param(
 )
 $ErrorActionPreference='Stop'
 $state=Join-Path $env:LOCALAPPDATA 'AgentTerminalClarity'
+New-Item -ItemType Directory -Path $state -Force | Out-Null
+trap {
+  $failure=$_
+  try {Add-Content -LiteralPath (Join-Path $state "$App-launch.log") -Value ((Get-Date -Format o)+' '+$failure.Exception.Message)} catch {}
+  Write-Error -ErrorRecord $failure -ErrorAction Continue
+  exit 1
+}
 $node=(Get-Command node.exe -ErrorAction SilentlyContinue).Source
 if(-not $node){throw 'Node.js 22+ is required. Install Node.js LTS, then run this launcher again.'}
 $nodeVersion=(& $node --version | Select-Object -Last 1)
@@ -28,12 +35,13 @@ if(-not $AppPath){
 if(-not(Test-Path -LiteralPath $AppPath -PathType Leaf)){throw 'Application not found. Supply -AppPath with its executable path.'}
 $AppPath=(Resolve-Path -LiteralPath $AppPath).Path
 $running=Get-CimInstance Win32_Process | Where-Object {$_.ExecutablePath -eq $AppPath}
-if($running){throw "Please save work and fully exit $App first. This launcher never closes a running application."}
 $port=if($App -eq 'codex'){29471}else{29472}
-if(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue){throw "Port $port is already occupied. Nothing was started."}
-if(Test-Path -LiteralPath (Join-Path $state "$App.lock")){throw 'Watcher lock exists. Inspect it or use RESTORE before starting another watcher.'}
-New-Item -ItemType Directory -Path $state -Force | Out-Null
-Start-Process -FilePath $AppPath -ArgumentList @('--remote-debugging-address=127.0.0.1',"--remote-debugging-port=$port") -WindowStyle Hidden | Out-Null
+$listeners=@(Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue)
+if($running -and -not $listeners){throw "Please save work and fully exit $App first. The running instance has no theme debug port; it was left untouched."}
+if(-not $running -and $listeners){throw "Port $port is already occupied. Nothing was started."}
+if(-not $running){
+  Start-Process -FilePath $AppPath -ArgumentList @('--remote-debugging-address=127.0.0.1',"--remote-debugging-port=$port") -WindowStyle Normal | Out-Null
+}
 $ready=$false
 for($i=0;$i -lt 60;$i++){
   Start-Sleep -Milliseconds 500
@@ -46,6 +54,18 @@ for($i=0;$i -lt 60;$i++){
   }
 }
 if(-not $ready){throw 'Debug endpoint did not start. No CSS was injected. The app was left running.'}
+$lockPath=Join-Path $state "$App.lock"
+$watcherRunning=$false
+if(Test-Path -LiteralPath $lockPath){
+  $watcherPid=0
+  if(-not [int]::TryParse((Get-Content -LiteralPath $lockPath -Raw).Trim(),[ref]$watcherPid)){throw 'Invalid watcher lock. Inspect it before removing.'}
+  $watcher=Get-CimInstance Win32_Process -Filter "ProcessId=$watcherPid"
+  if($watcher -and $watcher.ExecutablePath -eq $node -and $watcher.CommandLine -match [regex]::Escape($runtime) -and $watcher.CommandLine -match "--app\s+$App(?:\s|$)"){$watcherRunning=$true}
+  else {throw 'Watcher lock is stale or belongs to another process. Inspect it before removing; no process was stopped.'}
+}
+& $node $runtime --app $App --show
+if($LASTEXITCODE -ne 0){throw 'The application started, but showing the window or applying CSS failed. See the error above.'}
+if($watcherRunning){Write-Host "Existing $App window shown; existing theme watcher reused.";exit 0}
 $stdout=Join-Path $state "$App.log"
 $stderr=Join-Path $state "$App-errors.log"
 Start-Process -FilePath $node -ArgumentList @(('"'+$runtime+'"'),'--app',$App,'--watch') -WindowStyle Hidden -RedirectStandardOutput $stdout -RedirectStandardError $stderr | Out-Null
