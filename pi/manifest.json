@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "local.terminal-clarity",
+  "name": "终端清晰",
+  "version": "1.0.0",
+  "description": "Pi CLI 风格的回复排版：黄色标题、紫色代码与路径、清晰表格网格。只改变显示。",
+  "author": "Local",
+  "main": "main.js",
+  "engines": { "piDesktop": ">=0.20.1" },
+  "permissions": ["ui.theme"],
+  "contributes": {
+    "themes": [
+      {
+        "id": "terminal",
+        "label": "终端清晰 · Pi CLI",
+        "path": "themes/terminal.css",
+        "base": "dark"
+      }
+    ]
+  }
+}

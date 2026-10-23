@@ -1,0 +1,141 @@
+/* PI-Desktop 0.20.1. Static theme only; no scripts, assets or remote fonts. */
+:root[data-theme="dark"] .chat-surface {
+  --terminal-ink: #c8c8c8;
+  --terminal-heading: #e5c400;
+  --terminal-code: #df79ef;
+  --terminal-rule: #737373;
+}
+
+/* Match the CLI reading surface, not the surrounding application chrome. */
+:root[data-theme="dark"] .thread-wrap {
+  background: #0c0c0c;
+}
+
+:root[data-theme="dark"] .thread-content {
+  --chat-content-max-width: 1120px;
+  --chat-prose-max-width: 1120px;
+  max-width: min(100%, 1120px);
+}
+
+:root[data-theme="dark"] .prose-chat {
+  color: var(--terminal-ink, #c8c8c8);
+  font-size: var(--text-base, 15px);
+  font-weight: 400;
+  line-height: 1.65;
+  letter-spacing: 0;
+  text-wrap: wrap;
+  -webkit-font-smoothing: auto;
+}
+
+:root[data-theme="dark"] .prose-chat p { margin: 0.65em 0; }
+:root[data-theme="dark"] .prose-chat strong {
+  color: #f0c674;
+  font-weight: 600;
+}
+
+:root[data-theme="dark"] .prose-chat :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--terminal-heading, #e5c400);
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.5;
+  margin: 1.2em 0 0.65em;
+  text-wrap: wrap;
+}
+:root[data-theme="dark"] .prose-chat h1 { font-size: var(--text-xl, 19px); }
+:root[data-theme="dark"] .prose-chat h2 { font-size: var(--text-lg-plus, 17px); }
+:root[data-theme="dark"] .prose-chat :is(h3, h4, h5, h6) { font-size: var(--text-lg, 16px); }
+:root[data-theme="dark"] .prose-chat :is(h1, h2, h3, h4, h5, h6) strong {
+  color: inherit;
+}
+
+/* Inline identifiers remain purple even when nested in emphasis or links. */
+:root[data-theme="dark"] .prose-chat :not(pre) > code {
+  color: var(--terminal-code, #df79ef);
+  background: transparent;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--font-mono, Consolas, monospace);
+  font-size: 1em;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+:root[data-theme="dark"] .prose-chat a {
+  color: var(--terminal-code, #df79ef);
+  text-decoration-color: #844d8d;
+  text-underline-offset: 3px;
+}
+:root[data-theme="dark"] .prose-chat a:hover {
+  color: #f1adff;
+  text-decoration-color: currentColor;
+}
+:root[data-theme="dark"] .prose-chat a strong { color: inherit; }
+
+:root[data-theme="dark"] .prose-chat :is(ul, ol) {
+  margin: 0.55em 0 0.85em;
+  padding-left: 1.35em;
+}
+:root[data-theme="dark"] .prose-chat li { margin: 0.25em 0; }
+:root[data-theme="dark"] .prose-chat li::marker { color: #df79ef; }
+:root[data-theme="dark"] .prose-chat blockquote {
+  color: #c8c8c8;
+  border-left: 2px solid #df79ef;
+  border-radius: 0;
+  background: transparent;
+  padding: 0.15em 0 0.15em 1em;
+}
+
+/* Real cell boundaries, no zebra tiles, no compressed small-print table. */
+:root[data-theme="dark"] .prose-chat .table-wrap {
+  border-radius: 0;
+  margin: 0.85em 0 1.25em;
+  overflow-x: auto;
+}
+:root[data-theme="dark"] .prose-chat .table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: inherit;
+  font-size: 1em;
+  line-height: 1.55;
+}
+:root[data-theme="dark"] .prose-chat :is(th, td) {
+  border: 1px solid var(--terminal-rule, #737373);
+  background: transparent;
+  padding: 7px 11px;
+  color: #c8c8c8;
+  font-size: 1em;
+  letter-spacing: 0;
+  vertical-align: top;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+:root[data-theme="dark"] .prose-chat th {
+  color: #eeeeee;
+  font-weight: 600;
+  background: #121212;
+}
+:root[data-theme="dark"] .prose-chat tbody tr:nth-child(even) td,
+:root[data-theme="dark"] .prose-chat tbody tr:hover td { background: transparent; }
+:root[data-theme="dark"] .prose-chat td code { font-size: 1em; }
+
+/* Do not override Shiki token colors or code copy controls. */
+:root[data-theme="dark"] .prose-chat pre {
+  font-size: var(--text-sm-plus, 14px);
+  line-height: 1.6;
+}
+:root[data-theme="dark"] .prose-chat pre code {
+  color: inherit;
+  font-weight: 400;
+  font-size: inherit;
+  background: transparent;
+  padding: 0;
+}
+:root[data-theme="dark"] .prose-chat.thinking-prose {
+  color: #999999;
+  font-size: var(--text-sm-plus, 14px);
+}
+
+@media (max-width: 640px) {
+  :root[data-theme="dark"] .prose-chat :is(th, td) { padding: 6px 8px; }
+}

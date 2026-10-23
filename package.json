@@ -1,0 +1,9 @@
+{
+  "name": "agent-terminal-clarity",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test test-runtime.mjs" },
+  "license": "MIT"
+}
